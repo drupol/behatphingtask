@@ -16,33 +16,134 @@ class BehatTask extends Task {
   protected $file;    // the source file (from xml attribute)
   protected $filesets = array(); // all fileset objects assigned to this task
 
-  // parameters for behat task
-  protected $executable = NULL;
+  /**
+   * Path the the Behat executable
+   *
+   * @var string
+   */
+  protected $executable = 'behat';
+
+  /**
+   * Optional path(s) to execute.
+   *
+   * @var null
+   */
   protected $path = NULL;
+
+  /**
+   * Specify config file to use.
+   *
+   * @var null
+   */
   protected $config = NULL;
+
+  /**
+   * Only executeCall the feature elements which match part
+   * of the given name or regex.
+   *
+   * @var null
+   */
   protected $name = NULL;
+
+  /**
+   * Only executeCall the features or scenarios with tags
+   * matching tag filter expression.
+   *
+   * @var null
+   */
   protected $tags = NULL;
+
+  /**
+   * Only executeCall the features with actor role matching
+   * a wildcard.
+   *
+   * @var null
+   */
   protected $role = NULL;
+
+  /**
+   * Specify config profile to use.
+   *
+   * @var null
+   */
   protected $profile = NULL;
+
+  /**
+   * Only execute a specific suite.
+   *
+   * @var null
+   */
   protected $suite = NULL;
+
+  /**
+   * Passes only if all tests are explicitly passing.
+   *
+   * @var bool
+   */
   protected $strict = FALSE;
+
+  /**
+   * Increase verbosity of exceptions.
+   *
+   * @var bool
+   */
   protected $verbose = FALSE;
+
+  /**
+   * Force ANSI color in the output.
+   *
+   * @var bool
+   */
   protected $colors = TRUE;
+
+  /**
+   * Invokes formatters without executing the tests and hooks.
+   *
+   * @var bool
+   */
   protected $dryRun = FALSE;
+
+  /**
+   * Stop processing on first failed scenario.
+   *
+   * @var bool
+   */
   protected $haltonerror = FALSE;
+
+  /**
+   * The output logs to be returned.
+   *
+   * @var null
+   */
   protected $output_property = NULL;
-  protected $return_property = 0;
+
+  /**
+   * The return value.
+   *
+   * @var null
+   */
+  protected $return_property = NULL;
+
+  /**
+   * All Behat options to be used to create the command.
+   *
+   * @var array
+   */
   protected $options = array();
 
   /**
-   * Path the Behat executable.
+   * Set the path to the Behat executable.
+   *
+   * @param string $str The executable
    */
-  public function setexecutable($str) {
+  public function setExecutable($str) {
     $this->executable = $str;
   }
 
   /**
    * Set the path to features to test.
+   *
+   * @param string $path The path to features.
    */
   public function setPath($path) {
     $this->path = $path;
@@ -58,6 +159,11 @@ class BehatTask extends Task {
     $this->config = $config;
   }
 
+  /**
+   * Sets the name of tests to run.
+   *
+   * @param $name
+   */
   public function setName($name)
   {
     $this->name = $name;
@@ -73,16 +179,31 @@ class BehatTask extends Task {
     $this->tags = $tags;
   }
 
+  /**
+   * Sets the role able to run tests.
+   *
+   * @param $role
+   */
   public function setRole($role)
   {
     $this->role = $role;
   }
 
+  /**
+   * Set the profile to use for tests.
+   *
+   * @param $profile
+   */
   public function setProfile($profile)
   {
     $this->profile = $profile;
   }
 
+  /**
+   * Set the test suite to use.
+   *
+   * @param $suite
+   */
   public function setSuite($suite)
   {
     $this->suite = $suite;
@@ -90,6 +211,7 @@ class BehatTask extends Task {
 
   /**
    * Sets the flag if strict testing should be enabled.
+   *
    * @param boolean $strict
    */
   public function setStrict($strict)
@@ -99,6 +221,7 @@ class BehatTask extends Task {
 
   /**
    * Sets the flag if a verbose output should be used.
+   *
    * @param boolean $verbose
    */
   public function setVerbose($verbose)
@@ -108,6 +231,7 @@ class BehatTask extends Task {
 
   /**
    * Either force ANSI colors on or off.
+   *
    * @param boolean $colors
    */
   public function setColors($colors)
@@ -117,6 +241,7 @@ class BehatTask extends Task {
 
   /**
    * Invokes test formatters without running tests against a site.
+   *
    * @param boolean $dryrun
    */
   public function setDryRun($dryrun)
@@ -126,6 +251,7 @@ class BehatTask extends Task {
 
   /**
    * Sets the flag if test execution should stop in the event of a failure.
+   *
    * @param boolean $stop
    */
   public function setHaltonerror($stop)
@@ -133,20 +259,56 @@ class BehatTask extends Task {
     $this->haltonerror = StringHelper::booleanValue($stop);
   }
 
+  /**
+   * The Phing property output should be assigned to.
+   *
+   * @param $str
+   */
   public function setOutputProperty($str) {
     $this->output_property = $str;
   }
 
+  /**
+   * The Phing property the return code should be assigned to.
+   *
+   * @param $str
+   */
   public function setReturnProperty($str) {
     $this->return_property = $str;
   }
 
+  /**
+   * Rejigs the options array into a meaningful string of
+   * command line arguments.
+   *
+   * @param $name
+   * @param $value
+   * @return string
+   */
   protected function createOption($name, $value) {
     if (is_numeric($name)) {
       return '--' . $value;
     }
 
     return '--' . $name . '=' . $value;
+  }
+
+  /**
+   * Checks if the Behat executable exists.
+   *
+   * @param $executable
+   * @return bool
+   */
+  protected function behatExists($executable) {
+    var_dump($executable);
+    // First check if the executable path is a file.
+    if (is_file($executable)) {
+      return true;
+    }
+    // Now check to see if the executable has a path.
+    $return = shell_exec("type " . escapeshellarg($executable));
+    return (empty($return) ? false : true);
+
   }
 
   /**
@@ -161,10 +323,22 @@ class BehatTask extends Task {
   public function main() {
     $command = array();
 
-    // @TODO check behat path exists
-    $command[] = !empty($this->executable) ? $this->executable : 'behat';
+    if (!$this->behatExists($this->executable)) {
+      throw new BuildException(
+        'ERROR: the Behat executable "' . $this->executable . '" does not exist.',
+        $this->getLocation()
+      );
+    }
+    $command[] = $this->executable;
 
-    // @TODO check each path exists
+    if ($this->path) {
+      if (!file_exists($this->path)) {
+        throw new BuildException(
+          'ERROR: the "' . $this->path . '" path does not exist.',
+          $this->getLocation()
+        );
+      }
+    }
     $command[] = !empty($this->path) ? $this->path : '';
 
     if ($this->config) {
@@ -218,6 +392,7 @@ class BehatTask extends Task {
       $this->options[] = 'stop-on-failure';
     }
 
+    // Contract all options into the form Behat expects.
     foreach ($this->options as $name => $value) {
       $command[] = $this->createOption($name, $value);
     }
@@ -233,17 +408,19 @@ class BehatTask extends Task {
       $this->log($line);
     }
 
+    // Return the output into a Phing property if specified.
     if (!empty($this->output_property)) {
       $this->getProject()
         ->setProperty($this->output_property, implode("\n", $output));
     }
 
+    // Return the Behat exit value to a Phing property if specified.
     if (!empty($this->return_property)) {
       $this->getProject()
         ->setProperty($this->return_property, $return);
     }
 
-    // Throw an exception if behat fails.
+    // Throw an exception if Behat fails.
     if ($this->haltonerror && $return != 0) {
       throw new BuildException("Behat exited with code $return");
     }
