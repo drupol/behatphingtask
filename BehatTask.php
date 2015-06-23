@@ -247,7 +247,7 @@ class BehatTask extends Task
      */
     public function setVerbose($verbose)
     {
-        $this->verbose = StringHelper::booleanValue($verbose);
+        $this->verbose = $verbose;
     }
 
     /**
@@ -410,8 +410,8 @@ class BehatTask extends Task
             $this->options[] = 'strict';
         }
 
-        if ($this->verbose) {
-            $this->options[] = 'verbose';
+        if ($this->verbose !== false) {
+            $this->options['verbose'] = $this->verbose;
         }
 
         if (!$this->colors) {
